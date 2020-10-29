@@ -5,10 +5,6 @@ import com.gg.ecom.model.Address;
 import com.gg.ecom.model.PaymentAccount;
 import com.gg.ecom.model.Role;
 
-import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 

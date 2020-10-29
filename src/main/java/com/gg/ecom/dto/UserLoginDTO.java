@@ -1,16 +1,17 @@
-package com.gg.ecom.payload.request;
+package com.gg.ecom.dto;
 
-import javax.validation.constraints.NotBlank;
+public class UserLoginDTO {
 
-public class LoginRequest {
 
-    @NotBlank
     private String username;
-
-    @NotBlank
+    private String email;
+    private String userNID;
     private String password;
 
-    public LoginRequest(@NotBlank String username, @NotBlank String password) {
+    public UserLoginDTO() {
+    }
+
+    public UserLoginDTO(String username, String password) {
         this.username = username;
         this.password = password;
     }

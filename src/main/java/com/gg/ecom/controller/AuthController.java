@@ -5,6 +5,7 @@ import com.gg.ecom.model.Role;
 import com.gg.ecom.model.User;
 import com.gg.ecom.payload.request.LoginRequest;
 import com.gg.ecom.payload.request.SignupRequest;
+import com.gg.ecom.payload.request.UpdateSignupRequest;
 import com.gg.ecom.payload.response.JwtResponse;
 import com.gg.ecom.payload.response.MessageResponse;
 import com.gg.ecom.repository.RoleRepository;
@@ -14,16 +15,13 @@ import com.gg.ecom.security.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.HashSet;
@@ -77,6 +75,7 @@ public class AuthController {
                         userDetails.getNID(),
                         roles));
     }
+
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
@@ -149,5 +148,88 @@ public class AuthController {
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
+
+    @PatchMapping("/user/update-login")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER') or hasRole('BUYER')")
+    public ResponseEntity<?> editLoginDetails(@Valid @RequestBody UpdateSignupRequest signUpRequest) {
+
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Email is already in use!"));
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User user = userRepository.findByUsername(username).get();
+
+
+        user.setEmail(signUpRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
+
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new MessageResponse("Login Details Changed successfully!"));
+    }
+
+
+    @PatchMapping("/user/become-seller")
+    @PreAuthorize("hasRole('BUYER')")
+    public ResponseEntity<?> becomeASeller(@Valid @RequestBody SignupRequest signUpRequest) {
+
+        String userNID = signUpRequest.getNID();
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User user = userRepository.findByUsername(username).get();
+
+
+        if (user.getUsername() != signUpRequest.getUsername()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Previous and Current Usernames must be identical"));
+        }
+
+
+        if (user.getUserNID() != signUpRequest.getNID()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Previous and Current NID must be identical"));
+        }
+
+        if (userRepository.existsByUserNID(userNID)) {
+            User existingUser = userRepository.findByUserNID(userNID).get();
+            Set<Role> existingUserRoles = existingUser.getRoles();
+
+            for (Role rol : existingUserRoles) {
+                if (rol.getRoleName().toString().equalsIgnoreCase("SELLER")) {
+                    return ResponseEntity
+                            .badRequest()
+                            .body(new MessageResponse("Error: NID \"" + userNID + "\" is already a SELLER!"));
+                }
+            }
+        }
+
+        signUpRequest.getRole().forEach(role -> {
+            if (role.toUpperCase() != "SELLER") {throw new RuntimeException("Role must be SELLER");}
+        });
+
+        user.setEmail(signUpRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
+
+        Set<String> strRoles = signUpRequest.getRole();
+        Set<Role> roles = new HashSet<>();
+
+        Role sellerRole = roleRepository.findByRoleName(ERole.ROLE_SELLER)
+                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+        roles.add(sellerRole);
+
+        user.setRoles(roles);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new MessageResponse(user.getUsername() + " is now a Seller!"));
+    }
+
 
 }

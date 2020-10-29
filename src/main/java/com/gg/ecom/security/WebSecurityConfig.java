@@ -16,6 +16,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import java.util.concurrent.TimeUnit;
 
 import static com.gg.ecom.model.ERole.*;
 
@@ -80,9 +83,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/auth/**", "/", "index", "/api/test/**").permitAll()
                 .antMatchers("/test").hasRole("ADMIN")
                 .anyRequest()
-                .authenticated();
-
-                /*.and()
+                .authenticated()
+                .and()
                 .formLogin()
                     .loginPage("/api/login")
                     .permitAll()
@@ -101,7 +103,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .clearAuthentication(true)
                     .invalidateHttpSession(true)
                     .deleteCookies("JSESSIONID", "remember-me")
-                    .logoutSuccessUrl("/api/login");*/
+                    .logoutSuccessUrl("/api/login");
 
         http.headers().frameOptions().disable();
        // http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
