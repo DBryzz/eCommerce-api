@@ -20,12 +20,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -182,17 +184,22 @@ public class AuthController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
-        User user = userRepository.findByUsername(username).get();
 
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        if (!userOptional.isPresent()) {
+            throw new UsernameNotFoundException("not found");
+        }
 
-        if (user.getUsername() != signUpRequest.getUsername()) {
+        User user = userOptional.get();
+
+        if (!(user.getUsername().equals(signUpRequest.getUsername()))) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: Previous and Current Usernames must be identical"));
         }
 
 
-        if (user.getUserNID() != signUpRequest.getNID()) {
+        if (!(user.getUserNID().equals(signUpRequest.getNID()))) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: Previous and Current NID must be identical"));
@@ -212,7 +219,7 @@ public class AuthController {
         }
 
         signUpRequest.getRole().forEach(role -> {
-            if (role.toUpperCase() != "SELLER") {throw new RuntimeException("Role must be SELLER");}
+            if (!("role_" + role).toUpperCase().equals("ROLE_SELLER")) {throw new RuntimeException("Role must be SELLER");}
         });
 
         user.setEmail(signUpRequest.getEmail());
