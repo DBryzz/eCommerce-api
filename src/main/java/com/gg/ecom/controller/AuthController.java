@@ -155,19 +155,33 @@ public class AuthController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER') or hasRole('BUYER')")
     public ResponseEntity<?> editLoginDetails(@Valid @RequestBody UpdateSignupRequest signUpRequest) {
 
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User user = userRepository.findByUsername(username).get();
+
+        if (signUpRequest.getEmail().equals("")) {
+            signUpRequest.setEmail(user.getEmail());
+        }
+
+        if (userRepository.existsByEmail(signUpRequest.getEmail()) && !(signUpRequest.getEmail().equals(user.getEmail()))) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: Email is already in use!"));
         }
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-        User user = userRepository.findByUsername(username).get();
+        // Verify that user knows previous password
+
+        if (!isAuthenticatedNow(user.getUsername(), signUpRequest.getPreviousPassword())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("The Previous Password did not match"));
+        }
+
+
 
 
         user.setEmail(signUpRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
+        user.setPassword(passwordEncoder.encode(signUpRequest.getNewPassword()));
 
 
         userRepository.save(user);
@@ -236,6 +250,19 @@ public class AuthController {
         userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse(user.getUsername() + " is now a Seller!"));
+    }
+
+    public boolean isAuthenticatedNow(String userName, String oldPassword ) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(userName, oldPassword));
+
+
+
+        if (!(authentication.getName().equals(userName))) {
+            return false;
+        }
+
+        return true;
     }
 
 

@@ -12,11 +12,14 @@ public class UpdateSignupRequest {
     @Email
     private String email;
 
-
+    @NotBlank
+    @Size(min = 6, max = 40)
+    private String previousPassword;
 
     @NotBlank
     @Size(min = 6, max = 40)
-    private String password;
+    private String newPassword;
+
 
     public String getEmail() {
         return email;
@@ -26,13 +29,19 @@ public class UpdateSignupRequest {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPreviousPassword() {
+        return previousPassword;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPreviousPassword(String previousPassword) {
+        this.previousPassword = previousPassword;
     }
 
+    public String getNewPassword() {
+        return newPassword;
+    }
 
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
+    }
 }
