@@ -22,6 +22,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -31,7 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@RestController
+@Controller
 @RequestMapping("/api/auth")
 public class AuthController {
 
@@ -54,8 +56,20 @@ public class AuthController {
         this.jwtUtils = jwtUtils;
     }
 
+
+    @GetMapping("/login-page")
+    public String showLoginPage() {
+        return "login-page";
+    }
+
+    @ResponseBody
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public String authenticateUser(@Valid LoginRequest loginRequest, BindingResult result) {
+
+        if (result.hasErrors()) {
+            return "login-page";
+        }
+
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -68,14 +82,7 @@ public class AuthController {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(
-                new JwtResponse(
-                        jwt,
-                        userDetails.getId(),
-                        userDetails.getUsername(),
-                        userDetails.getEmail(),
-                        userDetails.getNID(),
-                        roles));
+        return "index";
     }
 
 

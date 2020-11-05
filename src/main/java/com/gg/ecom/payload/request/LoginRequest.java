@@ -4,10 +4,10 @@ import javax.validation.constraints.NotBlank;
 
 public class LoginRequest {
 
-    @NotBlank
+    @NotBlank(message = "Enter username")
     private String username;
 
-    @NotBlank
+    @NotBlank(message = "Enter password")
     private String password;
 
     public LoginRequest(@NotBlank String username, @NotBlank String password) {
