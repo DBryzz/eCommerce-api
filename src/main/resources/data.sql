@@ -46,3 +46,9 @@ INSERT INTO user_roles(user_id, role_id) VALUES(6, 3);
 INSERT INTO user_roles(user_id, role_id) VALUES(7, 2);
 INSERT INTO user_roles(user_id, role_id) VALUES(8, 3);
 INSERT INTO user_roles(user_id, role_id) VALUES(9, 1);
+
+INSERT INTO categories(category_id, title, description) VALUES(1, 'dresses', 'male and female clothes');
+INSERT INTO categories(category_id, title, description) VALUES(2, 'education', 'academic equipments and tools');
+INSERT INTO categories(category_id, title, description) VALUES(3, 'cars', 'four wheels vehicles');
+INSERT INTO categories(category_id, title, description) VALUES(4, 'phones', 'All types of phones');
+

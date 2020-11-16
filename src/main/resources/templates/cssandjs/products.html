@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xml:lang="en" xmlns:th = "http://www.thymeleaf.org">
+<head>
+    <title>This is a test</title>
+</head>
+
+<body>
+    <ul th:each = "product : ${products}" >
+        <li th:text = "${product.productId}"></li>
+        <li th:text = "${product.productName}"></li>
+        <li th:text = "${product.productCategory.categoryName}"></li>
+        <li th:text = "${product.productPrice}"></li>
+        <li th:text = "${product.productImageUrl}"></li> <br>
+        <img src = th:href="${product.productImageUrl}" alt="${product.productName}" height="50" width="50">
+<!--        <a th:href="${product.productImageUrl}" >image</a>-->
+        <li th:text = "${product.productDescription}"></li>
+        <li th:text = "${product.seller.username}"></li>
+
+
+
+    </ul>
+</body>
+
+</html>
+

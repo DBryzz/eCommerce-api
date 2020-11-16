@@ -14,6 +14,7 @@ import com.gg.ecom.security.jwt.JwtUtils;
 import com.gg.ecom.security.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,17 +61,18 @@ public class AuthController {
 
     @GetMapping("/login-page")
     public String showLoginPage() {
-        return "login-page";
+        return "cssandjs/login-page";
     }
 
-    @ResponseBody
-    @PostMapping("/signin")
-    public String authenticateUser(@Valid LoginRequest loginRequest, BindingResult result) {
 
-        if (result.hasErrors()) {
-            return "login-page";
-        }
 
+
+//    @RequestMapping(method = RequestMethod.POST, path = "/signin", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    /*@ResponseBody
+    @PostMapping("/signin")*/
+    public ResponseEntity<?> authenticationProcess(LoginRequest loginRequest) {
+
+        System.out.println(loginRequest.getUsername() + loginRequest.getPassword());
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -82,12 +85,37 @@ public class AuthController {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
+        return ResponseEntity.ok(
+                new JwtResponse(
+                        jwt,
+                        userDetails.getId(),
+                        userDetails.getUsername(),
+                        userDetails.getEmail(),
+                        userDetails.getNID(),
+                        roles));
+    }
+
+
+
+
+
+    @PostMapping("/signin")
+    public String authenticateUser(@Valid LoginRequest loginRequest, BindingResult result, Model model) {
+
+        if (result.hasErrors()) {
+            return "login-page";
+        }
+
+
+        ResponseEntity userJwtResponse = authenticationProcess(loginRequest);
+        model.addAttribute("response", userJwtResponse);
+
         return "index";
     }
 
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+    public ResponseEntity<?> registerUser(@Valid SignupRequest signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             return ResponseEntity
                     .badRequest()

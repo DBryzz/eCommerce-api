@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.concurrent.TimeUnit;
@@ -66,7 +67,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         web
                 .ignoring()
                 .antMatchers("/swagger-ui.html", "/swagger-resources/**",
-                        "/webjars/**", "/v2/api-docs", "/configuration/**", "/api/h2/**");
+                        "/webjars/**", "/v2/api-docs", "/configuration/**", "/api/h2/**", "/resources/**", "/favicon.ico")
+                .anyRequest();
     }
 
     @Override
@@ -80,15 +82,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/auth/**", "/", "index", "/api/test/**").permitAll()
+                .antMatchers("/api/auth/**", "/", "index",  "/api/test/**", "/api/product/**", "/api/category/**").permitAll()
                 .antMatchers("/test").hasRole("ADMIN")
                 .anyRequest()
                 .authenticated()
                 .and()
                 .formLogin()
-                    .loginPage("/api/login")
+                    .loginPage("/api/auth/login-page")
                     .permitAll()
-                    .defaultSuccessUrl("/test/successful", true)
+                    .defaultSuccessUrl("/api/products", true)
                     .passwordParameter("password")
                     .usernameParameter("username")
                 .and()
@@ -99,14 +101,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .logout()
                     .logoutUrl("/api/logout")
-                    .logoutRequestMatcher(new AntPathRequestMatcher("/api/logout", "GET"))
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/api/auth/logout", "GET"))
                     .clearAuthentication(true)
                     .invalidateHttpSession(true)
                     .deleteCookies("JSESSIONID", "remember-me")
-                    .logoutSuccessUrl("/api/login");
+                    .logoutSuccessUrl("/api/auth/login-page");
 
         http.headers().frameOptions().disable();
-       // http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
 
 

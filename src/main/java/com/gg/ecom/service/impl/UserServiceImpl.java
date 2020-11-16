@@ -1,12 +1,14 @@
 package com.gg.ecom.service.impl;
 
 import com.gg.ecom.dto.UserDTO;
+import com.gg.ecom.exception.ResourceNotFoundException;
 import com.gg.ecom.model.ERole;
 import com.gg.ecom.model.Role;
 import com.gg.ecom.model.User;
 import com.gg.ecom.repository.RoleRepository;
 import com.gg.ecom.repository.UserRepository;
 import com.gg.ecom.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,7 +21,7 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     private RoleRepository roleRepository;
 
-
+    @Autowired
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -42,11 +44,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getUser(Long id) {
         Optional<User> user = userRepository.findById(id);
+        if (!user.isPresent()) {
+            throw new ResourceNotFoundException("User Not Found: UserId - " + id);
+        }
         return copyUsertoUserDTO(user.get());
     }
 
     @Override
     public void removeUser(Long id) {
+        if (!userRepository.findById(id).isPresent()) {
+            throw new ResourceNotFoundException("User Not Found: UserId - " + id);
+        }
         userRepository.deleteById(id);
     }
 

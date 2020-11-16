@@ -15,7 +15,7 @@ import java.util.List;
 @CrossOrigin
 //@Controller
 @RestController
-@RequestMapping("/api/user/")
+@RequestMapping("/api")
 public class UserController {
 
     private UserService userService;
@@ -30,6 +30,8 @@ public class UserController {
 //    public String getForm() {
 //        return "login";
 //    }
+
+
 
     @GetMapping("/users")
    // @ResponseBody
