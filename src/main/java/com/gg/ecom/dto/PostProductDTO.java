@@ -39,24 +39,23 @@ public class PostProductDTO {
 
     @JsonIgnore
     private User seller;
+    */
 
     @JsonIgnore
     @NotBlank
-    private Category productCategory;*/
+    private Category productCategory;
 
     public PostProductDTO() {
     }
 
     public PostProductDTO(String productName, String productDescription,
-                          Long productPrice, Long productQuantity
-                          /*User seller, Category productCategory*/) {
+                          Long productPrice, Long productQuantity,
+                          Category productCategory) {
         this.productName = productName;
         this.productDescription = productDescription;
         this.productPrice = productPrice;
         this.productQuantity = productQuantity;
-        /*this.productImageUrl = productImageUrl;
-        this.seller = seller;
-        this.productCategory = productCategory;*/
+        this.productCategory = productCategory;
     }
 
     public String getProductName() {
@@ -108,7 +107,7 @@ public class PostProductDTO {
     public void setSeller(User seller) {
         this.seller = seller;
     }
-
+*/
     public Category getProductCategory() {
         return productCategory;
     }
@@ -116,5 +115,5 @@ public class PostProductDTO {
     public void setProductCategory(Category productCategory) {
         this.productCategory = productCategory;
     }
-*/
+
 }

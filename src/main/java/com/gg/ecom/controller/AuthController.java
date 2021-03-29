@@ -1,6 +1,9 @@
 package com.gg.ecom.controller;
 
+import com.gg.ecom.dto.PostProductDTO;
+import com.gg.ecom.dto.UserDTO;
 import com.gg.ecom.model.ERole;
+import com.gg.ecom.model.Product;
 import com.gg.ecom.model.Role;
 import com.gg.ecom.model.User;
 import com.gg.ecom.payload.request.LoginRequest;
@@ -12,6 +15,8 @@ import com.gg.ecom.repository.RoleRepository;
 import com.gg.ecom.repository.UserRepository;
 import com.gg.ecom.security.jwt.JwtUtils;
 import com.gg.ecom.security.service.UserDetailsImpl;
+import com.gg.ecom.service.CategoryService;
+import com.gg.ecom.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,6 +33,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +43,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/api/auth")
+@SessionAttributes("sessionInfo")
 public class AuthController {
 
     AuthenticationManager authenticationManager;
@@ -45,22 +52,28 @@ public class AuthController {
     PasswordEncoder passwordEncoder;
     JwtUtils jwtUtils;
 
+    private ProductService productService;
+    private CategoryService categoryService;
+
     @Autowired
     public AuthController(AuthenticationManager authenticationManager,
                           UserRepository userRepository,
                           RoleRepository roleRepository,
                           PasswordEncoder passwordEncoder,
-                          JwtUtils jwtUtils) {
+                          JwtUtils jwtUtils,
+                          ProductService productService,
+                          CategoryService categoryService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.productService = productService;
+        this.categoryService = categoryService;
     }
 
-
     @GetMapping("/login-page")
-    public String showLoginPage() {
+    public String showLoginPage(@ModelAttribute LoginRequest loginRequest) {
         return "cssandjs/login-page";
     }
 
@@ -68,8 +81,57 @@ public class AuthController {
 
 
 //    @RequestMapping(method = RequestMethod.POST, path = "/signin", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    /*@ResponseBody
-    @PostMapping("/signin")*/
+    //@ResponseBody
+    @PostMapping("/signin")
+    public String authenticationProcess(@ModelAttribute Product product, @ModelAttribute @Valid LoginRequest loginRequest, BindingResult result, Model model, HttpSession session) {
+
+        if (result.hasErrors()) {
+            return "cssandjs/login-page";
+        }
+
+        System.out.println(loginRequest.getUsername() + loginRequest.getPassword());
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        JwtResponse jwtResponse = new JwtResponse(
+                jwt,
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                userDetails.getNID(),
+                roles);
+
+        UserDTO user = new UserDTO();
+        user.setAccessToken(jwtResponse.getAccessToken());
+        user.setUserId(jwtResponse.getId());
+        user.setUsername(jwtResponse.getUsername());
+        user.setEmail(jwtResponse.getEmail());
+        user.setsRoles(jwtResponse.getRoles());
+
+
+        model.addAttribute("sessionInfo", user);
+//        session.setAttribute("jwtResponse", user);
+        model.addAttribute("products", productService.getAllProducts());
+        model.addAttribute("categories", categoryService.getCategories());
+
+
+        return "cssandjs/products";
+    }
+
+/*
+//    @RequestMapping(method = RequestMethod.POST, path = "/signin", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ResponseBody
+    @SessionAttributes("")
+    @PostMapping("/signin")
     public ResponseEntity<?> authenticationProcess(LoginRequest loginRequest) {
 
         System.out.println(loginRequest.getUsername() + loginRequest.getPassword());
@@ -94,11 +156,11 @@ public class AuthController {
                         userDetails.getNID(),
                         roles));
     }
+*/
 
 
 
-
-
+    /*@SessionAttributes("")
     @PostMapping("/signin")
     public String authenticateUser(@Valid LoginRequest loginRequest, BindingResult result, Model model) {
 
@@ -111,7 +173,7 @@ public class AuthController {
         model.addAttribute("response", userJwtResponse);
 
         return "index";
-    }
+    }*/
 
 
     @PostMapping("/signup")

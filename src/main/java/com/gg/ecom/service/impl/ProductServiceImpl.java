@@ -43,12 +43,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public String saveProduct(Long userId, Long catId,
-                              String productRequest, MultipartFile productImage) {
-        PostProductDTO productDTO = getJson(productRequest);
+    public String saveProduct(Long userId,
+                              PostProductDTO productDTO, MultipartFile productImage) {
+
+        //PostProductDTO productDTO = getJson(productRequest);
 
         String imageUrl = "";
         String message = "";
+
+        Long catId = productDTO.getProductCategory().getCategoryId();
 
         Optional<User> userOptional = userRepository.findById(userId);
         Optional<Category> categoryOptional = categoryRepository.findById(catId);
@@ -217,9 +220,10 @@ public class ProductServiceImpl implements ProductService {
         product.setProductDescription(productDTO.getProductDescription());
         product.setProductPrice(productDTO.getProductPrice());
         product.setProductQuantity(productDTO.getProductQuantity());
-        /*product.setProductImageUrl(productDTO.getProductImageUrl());
-        product.setSeller(productDTO.getSeller());
-        product.setProductCategory(productDTO.getProductCategory());*/
+        /*product.setProductCategory(productDTO.getProductCategory());
+
+        product.setProductImageUrl(productDTO.getProductImageUrl());
+        product.setSeller(productDTO.getSeller());*/
 
         return product;
     }

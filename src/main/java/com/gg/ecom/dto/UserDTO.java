@@ -6,6 +6,7 @@ import com.gg.ecom.model.PaymentAccount;
 import com.gg.ecom.model.Role;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class UserDTO {
@@ -17,8 +18,12 @@ public class UserDTO {
     private String userNID;
     //private String password;
     private Set<Role> roles = new HashSet<>();
+
     private PaymentAccount paymentAccount;
     private Address address;
+
+    private List<String> sRoles;
+    private String accessToken;
 
     public UserDTO() {
     }
@@ -99,6 +104,8 @@ public class UserDTO {
         this.roles = roles;
     }
 
+
+
     public PaymentAccount getPaymentAccount() {
         return paymentAccount;
     }
@@ -113,5 +120,22 @@ public class UserDTO {
 
     public void setAddress(Address address) {
         this.address = address;
+    }
+
+
+    public List<String> getsRoles() {
+        return sRoles;
+    }
+
+    public void setsRoles(List<String> sRoles) {
+        this.sRoles = sRoles;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 }

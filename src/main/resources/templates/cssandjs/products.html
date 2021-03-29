@@ -2,16 +2,67 @@
 <html xml:lang="en" xmlns:th = "http://www.thymeleaf.org">
 <head>
     <title>This is a test</title>
+
+    <link th:href="@{/styles/bootstrap - 4.0.0-css.min.css}" rel="stylesheet" >
+
+    <link th:href="@{/styles/font-awesome - 4.7.0-css.min.css}" rel="stylesheet">
 </head>
 
 <body>
+<!--/*
+{
+"productDescription": "Just a robe",
+"productName": "gown",
+"productPrice": 15000,
+"productQuantity": 5
+}
+*/-->
+
+<img class="header-logo-image" th:src="@{/images/ecom2.jpg}" alt="GG eCom" title="Ecommerce">
+
+<!--<p th:if="${sessionInfo == null} re"></p>-->
+<!--#session.getAttribute('jwtResponse')-->
+<form method="post"
+      th:action="@{/api/product/user/{userId}(userId=${sessionInfo.getUserId()})}"
+      th:object="${product}"
+      enctype="multipart/form-data">
+
+    <label for="productName">Product Name&nbsp;<span class="required">*</span></label>
+    <input type="text" th:field="*{productName}" class="" name="productName" id="productName" autocomplete="productName" placeholder="product Name" value="" />
+    <span th:if="${#fields.hasErrors('productName')}" th:errors="*{productName}"></span> <br>
+
+    <label for="productCategory">Product Category&nbsp;<span class="required">*</span></label>
+    <select th:field="*{productCategory}" class="" name="productCategory" id="productCategory" autocomplete="" >
+        <option th:each="category : ${categories}"
+                th:value="${category.categoryId}"
+                th:text="${category.categoryName}">
+        </option>
+    </select>
+
+    <label for="productPrice">Product Unit Price&nbsp;<span class="required">*</span></label>
+    <input type="text" th:field="*{productPrice}" class="" name="productPrice" id="productPrice" autocomplete="productPrice" placeholder="product Price" value="" />
+    <span th:if="${#fields.hasErrors('productPrice')}" th:errors="*{productPrice}"></span> <br>
+
+    <label for="productQuantity">Product Quantity&nbsp;<span class="required">*</span></label>
+    <input type="text" th:field="*{productQuantity}" class="" name="productQuantity" id="productQuantity" autocomplete="productQuantity" placeholder="product Quantity" value="" />
+    <span th:if="${#fields.hasErrors('productQuantity')}" th:errors="*{productQuantity}"></span> <br>
+
+    <label for="productDescription">Product Description&nbsp;<span class="required">*</span></label>
+    <input type="text" th:field="*{productDescription}" class="" name="productDescription" id="productDescription" autocomplete="productDescription" placeholder="product description" value="" />
+    <span th:if="${#fields.hasErrors('productDescription')}" th:errors="*{productDescription}"></span> <br>
+
+    <input type="file"  class="" name="image" id="image" autocomplete="image" placeholder="product Image" value="" />
+
+    <button type="submit"  class="" name="register" value="">Add Product</button> </p>
+</form> <br><br><hr>
+
     <ul th:each = "product : ${products}" >
         <li th:text = "${product.productId}"></li>
         <li th:text = "${product.productName}"></li>
         <li th:text = "${product.productCategory.categoryName}"></li>
         <li th:text = "${product.productPrice}"></li>
         <li th:text = "${product.productImageUrl}"></li> <br>
-        <img src = th:href="${product.productImageUrl}" alt="${product.productName}" height="50" width="50">
+        <img th:src="${product.productImageUrl}" alt="${product.productName}" height="50" width="50">
 <!--        <a th:href="${product.productImageUrl}" >image</a>-->
         <li th:text = "${product.productDescription}"></li>
         <li th:text = "${product.seller.username}"></li>

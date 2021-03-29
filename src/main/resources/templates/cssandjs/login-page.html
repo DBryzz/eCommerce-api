@@ -19,17 +19,24 @@
 </head>
 <body>
 <div class="container">
-    <form class="form-signin" method="post" action="/api/auth/signin" enctype="application/x-www-form-urlencoded"> <!--method="post" action="/api/auth/signin"-->
+    <form class="form-signin" method="post"
+          th:action="@{/api/auth/signin}"
+          th:object="${loginRequest}"
+          enctype="application/x-www-form-urlencoded"> <!--method="post" action="/api/auth/signin"-->
         <h2 class="form-signin-heading">Please login to eCom</h2>
         <p>
             <label for="username" class="sr-only">Username</label>
-            <input type="text" id="username" name="username" class="form-control" placeholder="Username" required=""
+            <input type="text" id="username" th:field="*{username}" name="username" class="form-control" placeholder="username" required=""
                    autofocus="">
+            <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></span>
+
         </p>
         <p>
             <label for="password" class="sr-only">Password</label>
-            <input type="password" id="password" name="password" class="form-control" placeholder="Password"
+            <input type="password" th:field="*{password}" id="password" name="password" class="form-control" placeholder="Password"
                    required="">
+            <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+
         </p>
         <p>
             Remember me?
